@@ -4,7 +4,12 @@ import pyzbar.pyzbar as pyzbar
 import numpy as np
 import cv2
 import time
-
+import sys, os
+import signal
+import datetime
+import json
+import firebase_admin
+from firebase_admin import credentials, auth, db
 # get the webcam:  
 cap = cv2.VideoCapture(0)
 
@@ -79,3 +84,11 @@ while(cap.isOpened()):
 # When everything done, release the capture
 cap.release()
 cv2.destroyAllWindows()
+
+cred = credentials.Certificate("rezes-d49cc-firebase-adminsdk-tmwrp-d4c177d45f.json")
+app = firebase_admin.initialize_app(cred, {'databaseURL': 'https://rezes-d49cc.firebaseio.com'})
+
+deneme2 = db.reference("users1").get()
+for x in deneme2:
+    if x == decodedObject.data:
+        print ("succes")
