@@ -11,12 +11,15 @@ import json
 import firebase_admin
 from firebase_admin import credentials, auth, db
 # get the webcam:  
+barCode = ""
 cap = cv2.VideoCapture(0)
+cred = credentials.Certificate("/home/pi/Downloads/rezes-d49cc-firebase-adminsdk-tmwrp-d4c177d45f.json")
+app = firebase_admin.initialize_app(cred, {'databaseURL': 'https://rezes-d49cc.firebaseio.com'})
 
-cap.set(3,640)
-cap.set(4,480)
-#160.0 x 120.0
-#176.0 x 144.0
+print("afterExit")
+cap.set(3,1024)
+cap.set(4,600)
+#160.0 x 120.0#176.0 x 144.0
 #320.0 x 240.0
 #352.0 x 288.0
 #640.0 x 480.0
@@ -27,7 +30,7 @@ time.sleep(2)
 def decode(im) : 
     # Find barcodes and QR codes
     decodedObjects = pyzbar.decode(im)
-    # Print results
+    # Print results-
     for obj in decodedObjects:
         print('Type : ', obj.type)
         print('Data : ', obj.data,'\n')     
@@ -41,6 +44,8 @@ while(cap.isOpened()):
     ret, frame = cap.read()
     # Our operations on the frame come here
     im = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+
          
     decodedObjects = decode(im)
 
@@ -70,25 +75,33 @@ while(cap.isOpened()):
         print('Data : ', decodedObject.data,'\n')
 
         barCode = str(decodedObject.data)
-        print(barCode)
-        cv2.putText(frame, barCode, (x, y), font, 1, (0,255,255), 2, cv2.LINE_AA)
+       
+        #print(barCode)
+        #cv2.putText(frame, barCode, (x, y), font, 1, (0,255,255), 2, cv2.LINE_AA)
                
     # Display the resulting frame
     cv2.imshow('REZESbYrhN',frame)
-    key = cv2.waitKey(1)
-    if key & 0xFF == ord('q'):
-        break
-    elif key & 0xFF == ord('s'): # wait for 's' key to save 
-        cv2.imwrite('Capture.png', frame)     
+    
+    cv2.waitKey(1)
+    #key = cv2.waitKey(1)
+    if (barCode != "") :
+        
+        deneme2 = db.reference("users1").get()
+        #time.sleep(10)
+        db.reference("temp").set(barCode)
+        print(deneme2)
+        for x in deneme2:
+            print(x)
+            #y = "b'" + x + "'"
+            #print(y)
+            if (x == barCode):
+                #print(x)
+                print ("succes")
+                cap.release()
+                cv2.destroyAllWindows()
+                exec(open("firsttry.py").read())
+    
 
 # When everything done, release the capture
 cap.release()
 cv2.destroyAllWindows()
-
-cred = credentials.Certificate("rezes-d49cc-firebase-adminsdk-tmwrp-d4c177d45f.json")
-app = firebase_admin.initialize_app(cred, {'databaseURL': 'https://rezes-d49cc.firebaseio.com'})
-
-deneme2 = db.reference("users1").get()
-for x in deneme2:
-    if x == decodedObject.data:
-        print ("succes")
